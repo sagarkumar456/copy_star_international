@@ -43,4 +43,16 @@
 <footer><a class="brand" href="#top"><img class="brand-logo" src="./assets/copystar-logo.png" width="1448" height="1086" alt="COPYSTAR"><span class="brand-caption">INTERNATIONAL<small>Sandeep Das · Machines. Parts. Service.</small></span></a><p>Kathmandu, Nepal<br><strong>Sandeep Das</strong> · COPYSTAR International<br><span>Photocopier machines, genuine parts & service.</span></p><a href="#experience">Explore again ↑</a></footer>
 </main>
 <script type="module" src="./app.js"></script><script type="module" src="./catalogue.js"></script><script type="module" src="./brand.js"></script><script type="module" src="./resources.js"></script><script type="module" src="./downloads.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    for (var reg of regs) reg.unregister();
+  });
+  if (window.caches) {
+    caches.keys().then(function(names) {
+      for (var name of names) caches.delete(name);
+    });
+  }
+}
+</script>
 </body></html>

@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {products,selectProducts,makeRequest,priceLabel,stockLabel} from './dist/catalogue-data.js';
+assert.equal(products.length,12);
+assert.equal(new Set(products.map(p=>p.id)).size,products.length);
+for(const p of products){assert(fs.existsSync('dist/assets/'+p.image));assert.equal(priceLabel(p),'Price on request');assert.equal(stockLabel(p),'Confirm availability');}
+assert.equal(selectProducts({category:'Machines'}).length,2);
+assert.equal(selectProducts({category:'Machines',brand:'Canon'})[0].id,'canon-office-copier');
+assert.equal(selectProducts({query:'  XEROX  TONER '}).length,1);
+assert.equal(selectProducts({query:'unlisted-987'}).length,0);
+assert.equal(selectProducts({availability:'in_stock'}).length,0);
+assert.equal(selectProducts({category:'Gears'}).length,2);
+assert.equal(selectProducts({brand:'Canon',category:'Gears'}).length,0);
+const names=selectProducts({sort:'name'}).map(p=>p.name);assert.deepEqual(names,[...names].sort((a,b)=>a.localeCompare(b)));
+const productRequest=makeRequest({kind:'product',name:'Test',phone:'+9770000000000',quantity:'2',model:'Sample model',message:'Check fit'},products[0]);
+assert(productRequest.includes('Xerox office copier'));assert(productRequest.includes('Quantity: 2'));assert(!productRequest.includes('undefined'));
+const serviceRequest=makeRequest({kind:'service',name:'Test',phone:'+9770000000000',model:'Sample',service:'Repair & diagnosis',location:'Test area',date:'2026-11-01'});
+assert(serviceRequest.includes('SERVICE REQUEST'));assert(serviceRequest.includes('subject to confirmation'));assert(!serviceRequest.includes('Quantity:'));assert(!serviceRequest.includes('undefined'));
+const html=fs.readFileSync('dist/index.html','utf8');
+for(const id of ['catalogue','services','contact','product-dialog','request-dialog','request-form'])assert(html.includes(`id="${id}"`));
+for(const file of ['app.js','model.js','catalogue.js','catalogue-data.js','catalogue.css','style.css'])assert(fs.existsSync('dist/'+file));
+console.log('PASS: 12 products, unique IDs, image assets, combined search/filters, empty results, alphabetical sort, product/service request contents and destination sections.');

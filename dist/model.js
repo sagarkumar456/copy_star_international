@@ -1,0 +1,39 @@
+import * as T from './vendor/three.module.js';
+export const smooth=(a,b,x)=>{const p=Math.max(0,Math.min(1,(x-a)/(b-a)));return p*p*(3-2*p)};
+export function explosionAt(p){return smooth(.08,.43,p)*(1-smooth(.61,.94,p))}
+export function buildCopier(screenTexture){
+ const root=new T.Group(), parts=[];
+ const mat=(c,r=.45,m=0)=>new T.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+ const ivory=mat('#e7e9e5',.32),white=mat('#fafbf8',.28),edge=mat('#cad0cb'),dark=mat('#25312e',.45),black=mat('#131c1c',.6),rubber=mat('#232a29',.88),steel=mat('#939f9a',.28,.65),blue=mat('#df252e',.35,.1),glass=mat('#537572',.19,.4);
+ const colors=['#15a9c5','#d13282','#ead23c','#27302d'].map(c=>mat(c,.32));
+ function mesh(geom,m,x,y,z,parent){const a=new T.Mesh(geom,m);a.position.set(x,y,z);a.castShadow=true;a.receiveShadow=true;parent.add(a);return a;}
+ const geometries=new Map();
+ function box(w,h,d,m,x,y,z,parent,bevel=.035){let key=[w,h,d,bevel].join(',');let geo=geometries.get(key);if(!geo){if(bevel>0){const b=Math.min(bevel,w/5,h/5,d/5),s=new T.Shape(),a=w/2-b,c=h/2-b;s.moveTo(-a,-c);s.lineTo(a,-c);s.lineTo(a,c);s.lineTo(-a,c);s.closePath();geo=new T.ExtrudeGeometry(s,{depth:d-2*b,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:b,bevelThickness:b});geo.translate(0,0,-d/2+b);geo.computeVertexNormals();}else geo=new T.BoxGeometry(w,h,d);geometries.set(key,geo)}return mesh(geo,m,x,y,z,parent)}
+ function cyl(r,len,m,x,y,z,parent,axis='x',r2=r){const a=mesh(new T.CylinderGeometry(r,r2,len,32),m,x,y,z,parent);if(axis==='x')a.rotation.z=Math.PI/2;if(axis==='z')a.rotation.x=Math.PI/2;return a;}
+ function part(name,p,delta,rot=[0,0,0]){let g=new T.Group();g.name=name;g.position.set(...p);root.add(g);parts.push({g,base:new T.Vector3(...p),delta:new T.Vector3(...delta),rot:new T.Vector3(...rot)});return g}
+ const chassis=part('Structural frame',[0,.65,0],[0,0,0]);box(2.48,.23,2.1,edge,0,0,0,chassis);box(2.15,.11,1.75,steel,0,.16,0,chassis);for(const x of [-1,1])for(const z of [-.81,.81]){box(.13,2.52,.13,steel,x,1.32,z,chassis);cyl(.13,.24,rubber,x,-.24,z,chassis);box(.25,.12,.3,dark,x,-.14,z,chassis)}box(2.13,.07,1.76,steel,0,2.62,0,chassis);box(2.13,.07,1.76,steel,0,1.25,0,chassis);
+ // Two paper cassettes, each an independent moving assembly.
+ for(let n=0;n<2;n++){const g=part('Paper cassette '+(n+1),[0,.93+n*.56,.03],[n?-.35:.2,n?-.4:-.65,1.8+n*.25],[0,n?-.08:.08,0]);box(2.16,.46,1.8,dark,0,0,0,g);box(2.32,.52,.15,ivory,0,0,.98,g);box(1.93,.025,1.45,white,0,.23,0,g,0);for(let i=0;i<5;i++)box(1.84,.012,1.4,edge,0,.16+i*.012,0,g,0);box(.64,.105,.11,dark,0,.11,1.075,g);box(.59,.04,.12,edge,0,.13,1.08,g);box(.16,.035,.015,blue,.83,-.15,1.061,g,0);box(.07,.04,.019,dark,.7,-.15,1.065,g,0)}
+ const back=part('Rear panel',[0,2,-.99],[0,.2,-1.6],[.04,0,0]);box(2.38,2.68,.14,ivory,0,0,0,back);for(let i=0;i<12;i++)box(.68,.025,.02,dark,.55,-.65+i*.06,-.08,back,0);
+ for(const side of [-1,1]){const p=part(side<0?'Left housing':'Right service panel',[side*1.21,2.03,0],[side*1.8,.15,0],[0,0,side*-.06]);box(.16,2.67,1.95,ivory,0,0,0,p);box(.02,.05,1.5,edge,side*.09,-.6,0,p,0);for(let j=0;j<11;j++)box(.019,.038,.43,dark,side*.09,.22+j*.068,.52,p,0);box(.025,.58,.55,edge,side*.09,-.76,-.25,p);for(let y of [-1.17,1.16])for(let z of [-.78,.78])cyl(.025,.025,steel,side*.099,y,z,p,'x')}
+ const front=part('Front service cover',[0,2.395,1.02],[-.3,.12,2.05],[.03,-.14,0]);box(2.31,1.33,.16,white,0,0,0,front);box(1.99,.015,.02,edge,0,-.35,.09,front,0);box(1.99,.015,.02,edge,0,.38,.09,front,0);box(.55,.06,.024,dark,0,.52,.10,front);box(.35,.105,.014,blue,-.83,.27,.094,front,0);
+ const output=part('Output paper tray',[0,3.1,.1],[1.48,.95,.75],[0,.13,.08]);box(2.29,.12,1.86,dark,0,0,0,output);box(2.29,.11,.02,white,0,0,.94,output);box(1.88,.035,1.3,black,0,.09,.16,output);box(1.55,.014,1.12,white,0,.12,.21,output,0);box(1.54,.012,1.10,white,.035,.137,.23,output,0);box(.13,.28,1.85,dark,-1.07,.18,0,output);box(.13,.28,1.85,dark,1.07,.18,0,output);
+ const scanner=part('Scanner assembly',[0,3.65,-.12],[-.18,1.6,-.25],[0,-.04,-.02]);box(2.65,.24,2.22,ivory,0,0,0,scanner);box(2.15,.015,1.69,glass,-.06,.14,0,scanner,0);box(.19,.025,1.72,dark,1.14,.146,0,scanner);box(2.67,.105,2.22,white,0,.26,0,scanner);box(2.05,.09,1.62,edge,0,.2,0,scanner);for(const x of [-.85,.85])box(.3,.22,.2,dark,x,.14,-1.03,scanner);
+ const feeder=part('Automatic document feeder',[.0,4.10,-.23],[.4,2.35,-.1],[0,.07,.035]);box(2.36,.38,1.73,white,0,0,0,feeder);box(1.55,.1,1.38,dark,-.17,.2,.1,feeder);box(1.63,.075,1.20,ivory,.16,.29,.12,feeder);box(1.38,.01,.99,white,.16,.338,.1,feeder,0);box(.45,.15,1.59,edge,-.95,.18,0,feeder);box(1.49,.22,.08,white,.12,.36,-.53,feeder);for(let i=0;i<5;i++)box(.34,.025,.02,dark,-.88,-.1+i*.055,.876,feeder,0);
+ const control=part('Touch control panel',[1.15,3.5,1.13],[1.6,.85,1.4],[-.12,.2,.12]);box(.87,.15,.71,dark,0,0,0,control);box(.78,.035,.60,black,0,.087,0,control);if(screenTexture){const screen=new T.MeshBasicMaterial({map:screenTexture});const plane=mesh(new T.PlaneGeometry(.68,.46),screen,0,.11,-.015,control);plane.rotation.x=-Math.PI/2}cyl(.043,.016,blue,.28,.11,.267,control,'y');box(.13,.5,.17,steel,-.15,-.23,-.17,control);control.rotation.x=.23;parts.at(-1).baseRotation=control.rotation.clone();
+ // Four toner units with colored caps and locating handles.
+ for(let i=0;i<4;i++){const toner=part('Toner '+['cyan','magenta','yellow','black'][i],[0,2.09+i*.21,-.22],[-1.9-i*.11,.38+i*.29,.5+i*.20],[0,-.12+i*.06,0]);cyl(.085,1.8,black,0,0,0,toner);cyl(.10,.15,colors[i],.88,0,0,toner);cyl(.078,.11,steel,-.95,0,0,toner);box(1.5,.04,.17,dark,0,.068,0,toner);box(.18,.12,.08,colors[i],1,0,.05,toner);box(.38,.07,.012,white,.4,.04,.08,toner,0)}
+ const rollers=part('Transfer and fuser rollers',[0,2.66,.12],[1.8,.25,-.6],[.08,.1,.12]);for(let i=0;i<3;i++){cyl(.12,1.93,i===0?steel:rubber,0,0,-.39+i*.38,rollers);cyl(.045,2.16,steel,0,0,-.39+i*.38,rollers)}for(let side of [-1,1])box(.1,.33,1.14,edge,side*1.05,0,0,rollers);
+ function gear(radius,thickness,teeth,x,y,z,parent){const s=new T.Shape();for(let i=0;i<=teeth*4;i++){let a=i/(teeth*4)*Math.PI*2,r=radius*(i%4===0||i%4===3?.81:1),px=Math.cos(a)*r,py=Math.sin(a)*r;if(i===0)s.moveTo(px,py);else s.lineTo(px,py)}const hole=new T.Path();hole.absarc(0,0,radius*.23,0,Math.PI*2,true);s.holes.push(hole);const geo=new T.ExtrudeGeometry(s,{depth:thickness,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.006,bevelThickness:.006});const obj=mesh(geo,steel,x,y,z,parent);obj.rotation.y=Math.PI/2;return obj}
+ const drive=part('Drive gears',[1.02,2.22,-.40],[2.03,-.28,-.27],[0,.1,0]);box(.07,1.05,.8,dark,0,0,0,drive);gear(.23,.10,14,.05,.23,0,drive);gear(.16,.1,12,.05,-.10,.21,drive);gear(.13,.1,10,.05,-.37,.02,drive);cyl(.16,.25,steel,-.12,.15,-.2,drive);
+ const feed=part('Feed rollers',[0,1.81,.3],[.3,-.22,-1.8],[.12,0,.04]);cyl(.04,2.1,steel,0,0,0,feed);for(let x of [-.7,0,.7])cyl(.13,.23,rubber,x,0,0,feed);
+ const bypass=part('Bypass tray',[1.37,1.75,.06],[1.8,-.8,.75],[0,0,-.27]);box(.14,.9,1.3,edge,0,0,0,bypass);box(.018,.69,1.04,dark,.085,0,0,bypass);
+ for(const p of parts){if(!p.baseRotation)p.baseRotation=p.g.rotation.clone()}
+ return {root,parts};
+}
+export function componentExplosionAt(p,index){
+ // Outer housings release first; smaller internals follow. All settle exactly home.
+ const delay=(index%5)*.014;
+ return smooth(.08+delay,.39+delay,p)*(1-smooth(.61+delay,.94,p));
+}
+export function poseParts(parts,p,time=0,float=true){for(let i=0;i<parts.length;i++){const a=parts[i],e=componentExplosionAt(p,i);a.g.position.copy(a.base).addScaledVector(a.delta,e);if(float&&a.delta.lengthSq()>0){a.g.position.y+=Math.sin(time*.85+i*1.3)*.035*e;a.g.position.x+=Math.cos(time*.65+i)*.02*e;}a.g.rotation.set(a.baseRotation.x+a.rot.x*e,a.baseRotation.y+a.rot.y*e,a.baseRotation.z+a.rot.z*e);}return explosionAt(p)}

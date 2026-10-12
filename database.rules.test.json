@@ -1,0 +1,60 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "software_downloads": {
+      ".read": true,
+      ".write": "auth != null && newData.exists()",
+      ".validate": "auth != null && newData.parent().child('software_download_meta/uid').val() === auth.uid && newData.parent().child('software_download_meta/requestId').isString() && !root.child('software_emails').child(auth.uid).child(newData.parent().child('software_download_meta/requestId').val()).exists() && newData.parent().child('software_emails').child(auth.uid).child(newData.parent().child('software_download_meta/requestId').val()).exists() && newData.parent().child('software_downloads').isNumber() && ((!root.child('software_downloads').exists() && newData.parent().child('software_downloads').val() === 1) || (root.child('software_downloads').isNumber() && newData.parent().child('software_downloads').val() === root.child('software_downloads').val() + 1)) && newData.parent().child('software_download_limits').child(auth.uid).val() === now"
+    },
+    "software_emails": {
+      ".read": false,
+      ".write": false,
+      "$uid": {
+        "$id": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.exists()",
+          ".validate": "$id.matches(/^[0-9a-f-]{36}$/) && newData.hasChildren(['email','brand','createdAt']) && newData.parent().parent().parent().child('software_download_meta/requestId').val() === $id && auth != null && newData.parent().parent().parent().child('software_download_meta/uid').val() === auth.uid && newData.parent().parent().parent().child('software_download_meta/requestId').isString() && !root.child('software_emails').child(auth.uid).child(newData.parent().parent().parent().child('software_download_meta/requestId').val()).exists() && newData.parent().parent().parent().child('software_emails').child(auth.uid).child(newData.parent().parent().parent().child('software_download_meta/requestId').val()).exists() && newData.parent().parent().parent().child('software_downloads').isNumber() && ((!root.child('software_downloads').exists() && newData.parent().parent().parent().child('software_downloads').val() === 1) || (root.child('software_downloads').isNumber() && newData.parent().parent().parent().child('software_downloads').val() === root.child('software_downloads').val() + 1)) && newData.parent().parent().parent().child('software_download_limits').child(auth.uid).val() === now",
+          "email": {
+            ".validate": "newData.isString() && newData.val().length <= 254 && newData.val().matches(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/)"
+          },
+          "brand": {
+            ".validate": "newData.val() === 'xerox'"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "software_download_meta": {
+      ".read": false,
+      ".write": "auth != null && newData.exists()",
+      ".validate": "newData.hasChildren(['uid','requestId','createdAt']) && auth != null && newData.parent().child('software_download_meta/uid').val() === auth.uid && newData.parent().child('software_download_meta/requestId').isString() && !root.child('software_emails').child(auth.uid).child(newData.parent().child('software_download_meta/requestId').val()).exists() && newData.parent().child('software_emails').child(auth.uid).child(newData.parent().child('software_download_meta/requestId').val()).exists() && newData.parent().child('software_downloads').isNumber() && ((!root.child('software_downloads').exists() && newData.parent().child('software_downloads').val() === 1) || (root.child('software_downloads').isNumber() && newData.parent().child('software_downloads').val() === root.child('software_downloads').val() + 1)) && newData.parent().child('software_download_limits').child(auth.uid).val() === now",
+      "uid": {
+        ".validate": "newData.val() === auth.uid"
+      },
+      "requestId": {
+        ".validate": "newData.isString() && newData.val().matches(/^[0-9a-f-]{36}$/)"
+      },
+      "createdAt": {
+        ".validate": "newData.val() === now"
+      },
+      "$other": {
+        ".validate": false
+      }
+    },
+    "software_download_limits": {
+      ".read": false,
+      ".write": false,
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists()",
+        ".validate": "newData.isNumber() && newData.val() === now && (!data.exists() || now >= data.val() + 60000) && auth != null && newData.parent().parent().child('software_download_meta/uid').val() === auth.uid && newData.parent().parent().child('software_download_meta/requestId').isString() && !root.child('software_emails').child(auth.uid).child(newData.parent().parent().child('software_download_meta/requestId').val()).exists() && newData.parent().parent().child('software_emails').child(auth.uid).child(newData.parent().parent().child('software_download_meta/requestId').val()).exists() && newData.parent().parent().child('software_downloads').isNumber() && ((!root.child('software_downloads').exists() && newData.parent().parent().child('software_downloads').val() === 1) || (root.child('software_downloads').isNumber() && newData.parent().parent().child('software_downloads').val() === root.child('software_downloads').val() + 1)) && newData.parent().parent().child('software_download_limits').child(auth.uid).val() === now"
+      }
+    }
+  }
+}

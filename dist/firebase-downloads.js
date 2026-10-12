@@ -37,7 +37,7 @@ export async function recordDownload({brand,email,requestId}){
   const previous=await get(ref(db,path));
   if(previous.exists()){
    if(previous.val().email!==email)throw new Error('Please refresh the page and try again.');
-   return {url:'/downloads/xerox-software.zip',count:(await get(ref(db,'software_downloads'))).val()};
+   return {url:'./downloads/xerox-software.zip',count:(await get(ref(db,'software_downloads'))).val()};
   }
   const limit=await get(ref(db,`software_download_limits/${uid}`));
   if(limit.exists()&&Date.now()-limit.val()<60000)throw new Error('Please wait one minute before downloading again.');
@@ -50,7 +50,7 @@ export async function recordDownload({brand,email,requestId}){
   await update(ref(db),changes);
   // Counter refresh must not turn a successfully saved request into a failed download.
   let count;try{count=(await get(ref(db,'software_downloads'))).val();}catch{}
-  return {url:'/downloads/xerox-software.zip',count};
+  return {url:'./downloads/xerox-software.zip',count};
  }catch(e){
   if(e.code==='auth/operation-not-allowed')throw new Error('Downloads are not ready yet. Please contact COPYSTAR.');
   if(e.code==='PERMISSION_DENIED'||e.code==='permission-denied')throw new Error('Unable to save your request. Please wait a minute and try again, or contact COPYSTAR.');

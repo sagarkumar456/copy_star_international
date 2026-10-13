@@ -5,12 +5,59 @@ import {buildTechnician,animateTechnicianService,SERVICE_ACTIONS} from './techni
 const $=id=>document.getElementById(id), stage=$('stage'), section=$('experience'), range=$('progress');
 let renderer,scene,camera,copier,technician,shadow,ground,p=0,target=0,last=0,visible=true,yaw=0,yawTarget=0,pitch=0,pitchTarget=0,chapter=-1;
 let currentMode='explode'; // 'explode' | 'technician'
-let techAction='toner'; // 'toner' | 'roller' | 'cassette'
+let techAction='all'; // 'all' (Full copier teardown & reassembly) | 'toner' | 'roller' | 'cassette' | 'scanner'
 let techProgress=0.0;
 let techPlaying=true;
 let techZoom=false;
 let techLastStepIdx=-1;
 let screenCanvas, screenCtx, screenTex;
+let soundEnabled=true;
+let audioCtx=null;
+let lastLockSoundStep=-1;
+
+// Web Audio API Synthesizer for tactile feedback
+function getAudioContext(){
+  if(!audioCtx&&typeof window!=='undefined'&&(window.AudioContext||window.webkitAudioContext)){
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    audioCtx=new AudioCtx();
+  }
+  if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
+  return audioCtx;
+}
+
+function playMechanicalSound(type='snap'){
+  if(!soundEnabled)return;
+  try{
+    const ctx=getAudioContext();
+    if(!ctx)return;
+    const now=ctx.currentTime;
+    if(type==='snap'){
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(920,now);
+      osc.frequency.exponentialRampToValueAtTime(160,now+0.08);
+      gain.gain.setValueAtTime(0.24,now);
+      gain.gain.exponentialRampToValueAtTime(0.001,now+0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now+0.09);
+
+      const click=ctx.createOscillator();
+      const clickGain=ctx.createGain();
+      click.type='sine';
+      click.frequency.setValueAtTime(2800,now);
+      click.frequency.exponentialRampToValueAtTime(500,now+0.025);
+      clickGain.gain.setValueAtTime(0.35,now);
+      clickGain.gain.exponentialRampToValueAtTime(0.001,now+0.03);
+      click.connect(clickGain);
+      clickGain.connect(ctx.destination);
+      click.start(now);
+      click.stop(now+0.03);
+    }
+  }catch(_){}
+}
 
 const mq=matchMedia('(prefers-reduced-motion: reduce)');let reduced=mq.matches;
 function motionUI(){$('motion').textContent='Motion: '+(reduced?'reduced':'full');$('motion').setAttribute('aria-pressed',String(reduced));}
@@ -144,14 +191,23 @@ function updateTechHUD(prog){
   const pb=$('tech-progress-bar');
   if(pb)pb.style.width=Math.round(prog*100)+'%';
 
+  if(technician&&technician.activePart){
+    const phaseTextEl=$('tech-phase-text');
+    if(phaseTextEl)phaseTextEl.textContent=technician.activePart.phase;
+    const phaseSubEl=$('tech-phase-sub')||$('tech-phase-hi');
+    if(phaseSubEl)phaseSubEl.textContent='[OEM PROCEDURE]';
+  }
+
   if(stepIdx!==techLastStepIdx){
     techLastStepIdx=stepIdx;
     const pill=$('tech-step-pill');
-    if(pill)pill.textContent=`STEP ${stepIdx+1} OF ${action.steps.length}`;
+    if(pill)pill.textContent=`PART ${stepIdx+1} OF ${action.steps.length}`;
     const categoryEl=$('tech-step-category');
     if(categoryEl)categoryEl.textContent=action.tag||'SERVICE SIMULATION';
     const title=$('tech-step-title');
     if(title)title.textContent=currentStep.title;
+    const subEl=$('tech-step-sub')||$('tech-step-hi');
+    if(subEl)subEl.textContent=currentStep.partTitle||currentStep.partName||'OEM Component';
     const specText=$('tech-spec-text');
     if(specText)specText.textContent=currentStep.spec||'OEM CERTIFIED PROCEDURE';
     const desc=$('tech-step-desc');
@@ -161,22 +217,70 @@ function updateTechHUD(prog){
       d.classList.toggle('active',idx===stepIdx);
     });
 
-    if(techAction==='toner'){
-      if(prog<0.22){
-        drawCopierScreen('Service in progress','Opening front cover','#f59e0b','12%');
-      }else if(prog<0.44){
-        drawCopierScreen('Replacing Toner','Cartridge unlocked','#ef4444','0%');
-      }else if(prog<0.72){
-        drawCopierScreen('Inserting Toner','Loading genuine cartridge','#3b82f6','50%');
-      }else{
-        drawCopierScreen('Ready to print','Cyan toner refilled 100%','#22c55e','100%');
-      }
+    // Dynamic copier LCD screen updates based on current servicing step
+    if(techAction==='all'){
+      if(stepIdx===0)drawCopierScreen('ADF Service','Feeder Hinge Tested','#f59e0b','Standby');
+      else if(stepIdx===1)drawCopierScreen('Optical Scanner','600 DPI CCD Cleaned','#3b82f6','95%');
+      else if(stepIdx===2)drawCopierScreen('Touch Interface','Flex Harness Docked','#3b82f6','OK');
+      else if(stepIdx===3)drawCopierScreen('Front Service Door','Bay Access Open','#ef4444','Door Open');
+      else if(stepIdx===4)drawCopierScreen('CMYK Toners','All 4 Bays Locked 100%','#22c55e','100%');
+      else if(stepIdx===5)drawCopierScreen('Fuser Unit','200°C Heat Sleeve Verified','#22c55e','100%');
+      else if(stepIdx===6)drawCopierScreen('Drive Train','60 RPM Gear Mesh OK','#22c55e','100%');
+      else if(stepIdx===7)drawCopierScreen('Dual Trays','1,000 Sheets Loaded','#22c55e','100%');
+      else drawCopierScreen('Ready to Print','All 19 Parts Verified','#22c55e','100%');
+    }else if(techAction==='toner'){
+      if(prog<0.18)drawCopierScreen('Service in Progress','Opening front cover','#f59e0b','12%');
+      else if(prog<0.36)drawCopierScreen('Cyan Refilled','Bay C Locked 100%','#3b82f6','25%');
+      else if(prog<0.54)drawCopierScreen('Magenta Refilled','Bay M Locked 100%','#ec4899','50%');
+      else if(prog<0.72)drawCopierScreen('Yellow Refilled','Bay Y Locked 100%','#eab308','75%');
+      else if(prog<0.88)drawCopierScreen('Black Refilled','Bay K Locked 100%','#18181b','100%');
+      else drawCopierScreen('Ready to Print','CMYK Full Calibrated','#22c55e','100%');
     }else if(techAction==='roller'){
-      drawCopierScreen('Maintenance Mode','Drive mesh verified','#22c55e','100%');
+      drawCopierScreen('Maintenance Mode','Drive Mesh & Fuser 100%','#22c55e','100%');
     }else if(techAction==='cassette'){
-      drawCopierScreen('Cassette Ready','Tray 1 loaded 500 sheets','#22c55e','100%');
+      drawCopierScreen('Cassettes Ready','Trays 1 & 2 Loaded 1000 Sh','#22c55e','100%');
+    }else if(techAction==='scanner'){
+      drawCopierScreen('Optical Ready','600 DPI Optical Bed OK','#22c55e','100%');
     }
   }
+}
+
+// Build and populate the Technical Parts Directory Drawer
+function initSpecsDrawer(){
+  const list=$('specs-drawer-list');
+  if(!list)return;
+  const partsData=[
+    {name:'Automatic Document Feeder (ADF)',category:'Optics & Feeder Unit',code:'CP-ADF-9400-HD',spec:'80 PPM Dual-Scan, Optical Borosilicate Guide, 100-Sheet Capacity',material:'Reinforced Polycarbonate + Dual Inversion Rollers',latch:'Dual Quick-Release Hinge Damper Pins'},
+    {name:'Optical Platen Glass & Scanner Bed',category:'Optical Scanning Assembly',code:'CP-SCN-6000-GL',spec:'600×600 DPI Optical CCD, First-Surface Mirrors, Dual LED Exposures',material:'Tempered Float Glass + Precision Aluminum Carriage',latch:'Vibration-Isolated Dampers & Front Locking Lugs'},
+    {name:'Smart Touch Screen Operator UI',category:'Control Interface Electronics',code:'CP-DSP-1010-UI',spec:'10.1" WSVGA Color Touchscreen, Emergency Stop Interlock, Flex Ribbon Cable',material:'Capacitive Multi-Touch Glass + Flame-Retardant ABS',latch:'Articulated Swivel Joint Bracket with Snap Clips'},
+    {name:'Front Magnetic Service Door',category:'Access Enclosure',code:'CP-DR-5200-FR',spec:'Dust-Proof Seal, Neoprene Gaskets, Dual Magnetic Safety Interlock Switches',material:'Impact-Resistant Polycarbonate Enclosure',latch:'Left Heavy-Duty Pivot Pins & Magnetic Safety Interlock'},
+    {name:'Cyan Toner Cartridge (C)',category:'Cyan Imaging Consumable',code:'CP-TN-8800-CYAN',spec:'45,000 Pages @ 5% A4, Micro-Polymer Cyan Toner, RFID Lock Authentication',material:'Engineered Polymer Bottle + Optical Level Prisms',latch:'Precision Dual Guide Rails with Positive Cam-Lock Lever'},
+    {name:'Magenta Toner Cartridge (M)',category:'Magenta Imaging Consumable',code:'CP-TN-8800-MAG',spec:'45,000 Pages @ 5% A4, Micro-Polymer Magenta Toner, RFID Lock Authentication',material:'Engineered Polymer Bottle + Optical Level Prisms',latch:'Precision Dual Guide Rails with Positive Cam-Lock Lever'},
+    {name:'Yellow Toner Cartridge (Y)',category:'Yellow Imaging Consumable',code:'CP-TN-8800-YEL',spec:'45,000 Pages @ 5% A4, Micro-Polymer Yellow Toner, RFID Lock Authentication',material:'Engineered Polymer Bottle + Optical Level Prisms',latch:'Precision Dual Guide Rails with Positive Cam-Lock Lever'},
+    {name:'High-Yield Black Toner (K)',category:'Monochrome Imaging Consumable',code:'CP-TN-8800-BLK',spec:'65,000 Pages @ 5% A4, Ultra-Dense Carbon Micro-Toner, RFID Chip Authenticated',material:'High-Capacity Polymer Bottle + Agitator Shaft',latch:'Precision Dual Guide Rails with Positive Cam-Lock Lever'},
+    {name:'Heated Transfer & Fuser Rollers',category:'Thermal Fixing Assembly',code:'CP-FUS-2200-HT',spec:'200°C Heat Resistance, 100,000 Continuous Pages, Built-in Thermistor Sensors',material:'Non-Stick Fluoropolymer Sleeve + Silicone Core + Steel Shaft',latch:'Dual Thermal Cam Locks & High-Temp Spring Retainers'},
+    {name:'Precision Drive Gear Transmission',category:'Mechanical Powertrain',code:'CP-GR-4402-DRV',spec:'14T / 12T / 10T Helical & Spur Gear Cluster, Zero Backlash Tolerance, 60 RPM Rated',material:'High-Torque POM Delrin + Sintered Steel Drive Hubs',latch:'Flanged Spline Shaft with Radial Retaining C-Clips'},
+    {name:'Paper Cassette Tray 1 & Tray 2',category:'Media Feed Cassette System',code:'CP-CAS-5000-D1',spec:'Dual 500-Sheet Capacity, 60–256 gsm Support, Precision Adjustable Guides',material:'Reinforced Stamped Steel Sub-Chassis + Ball-Bearing Slides',latch:'Telescopic Heavy-Duty Slides with Magnetic Latching'},
+    {name:'Rubber Pickup Rollers & Separation Pad',category:'Paper Transport Assembly',code:'CP-PK-1020-SET',spec:'Anti-Static Rubber Pickup Rings, Jam-Free Sheet Feed, Optical Level Detectors',material:'High-Friction EPDM Rubber + Polyurethane Separation Pad',latch:'Spring-Loaded Quick-Snap Spindle Shafts'}
+  ];
+
+  list.innerHTML=partsData.map((pt,i)=>`
+    <div class="specs-part-item">
+      <div class="specs-part-badge">
+        <span class="specs-part-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="specs-part-code">${pt.code}</span>
+      </div>
+      <div class="specs-part-info">
+        <h4>${pt.name}</h4>
+        <div class="specs-part-sub">${pt.category}</div>
+        <p class="specs-part-spec">${pt.spec}</p>
+        <div class="specs-part-tags">
+          <span>📦 <b>Material:</b> ${pt.material}</span>
+          <span>🔒 <b>Mounting:</b> ${pt.latch}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function setExperienceMode(newMode){
@@ -193,13 +297,20 @@ function setExperienceMode(newMode){
   const hud=$('tech-hud-card');
   if(hud)hud.hidden=!isTech;
 
+  const floatingTag=$('tech-floating-tag');
+  if(floatingTag&&!isTech)floatingTag.hidden=true;
+
   const annotations=$('annotations');
   if(annotations)annotations.hidden=isTech;
 
   const sceneControls=document.querySelector('.scene-controls');
   if(sceneControls)sceneControls.style.opacity=isTech?'0.25':'1';
 
-  if(technician)technician.root.visible=isTech;
+  if(technician){
+    technician.root.visible=isTech;
+    if(technician.caddy) technician.caddy.visible=isTech;
+    if(technician.snapRing) technician.snapRing.visible=false;
+  }
 
   if(isTech){
     if(copier&&copier.parts){
@@ -209,7 +320,7 @@ function setExperienceMode(newMode){
     }
     techProgress=0.0;
     techPlaying=true;
-    yawTarget=-0.32;
+    yawTarget=-0.28;
     pitchTarget=0.08;
     updateTechTaskUI();
     updatePlayButtonUI();
@@ -246,6 +357,66 @@ function initModeAndTechControls(){
     const toggleBtn=$('tech-hud-toggle');
     if(toggleBtn)toggleBtn.textContent=isCompact?'▴':'▾';
     positionCamera();
+  });
+
+  // Sound toggle button
+  $('tech-hud-sound')?.addEventListener('click',()=>{
+    soundEnabled=!soundEnabled;
+    const btn=$('tech-hud-sound');
+    if(btn){
+      btn.textContent=soundEnabled?'🔊':'🔇';
+      btn.title=soundEnabled?'Sound FX Enabled':'Sound FX Muted';
+    }
+    if(soundEnabled)playMechanicalSound('snap');
+  });
+
+  // Specs Directory Drawer toggle
+  $('tech-btn-specs')?.addEventListener('click',()=>{
+    const drawer=$('tech-specs-drawer');
+    if(drawer){
+      const isHidden=drawer.hidden;
+      drawer.hidden=!isHidden;
+      $('tech-btn-specs')?.classList.toggle('active',!drawer.hidden);
+    }
+  });
+  $('specs-drawer-close')?.addEventListener('click',()=>{
+    const drawer=$('tech-specs-drawer');
+    if(drawer){
+      drawer.hidden=true;
+      $('tech-btn-specs')?.classList.remove('active');
+    }
+  });
+
+  // Previous Part button
+  $('tech-btn-prev')?.addEventListener('click',()=>{
+    const action=SERVICE_ACTIONS[techAction];
+    if(!action)return;
+    let curIdx=0;
+    for(let i=0;i<action.steps.length;i++){
+      if(techProgress>=action.steps[i].start&&techProgress<=action.steps[i].end){
+        curIdx=i;break;
+      }
+    }
+    const prevIdx=Math.max(0,curIdx-1);
+    techProgress=action.steps[prevIdx].start+0.005;
+    techPlaying=false;
+    updatePlayButtonUI();
+  });
+
+  // Next Part button
+  $('tech-btn-next')?.addEventListener('click',()=>{
+    const action=SERVICE_ACTIONS[techAction];
+    if(!action)return;
+    let curIdx=0;
+    for(let i=0;i<action.steps.length;i++){
+      if(techProgress>=action.steps[i].start&&techProgress<=action.steps[i].end){
+        curIdx=i;break;
+      }
+    }
+    const nextIdx=Math.min(action.steps.length-1,curIdx+1);
+    techProgress=action.steps[nextIdx].start+0.005;
+    techPlaying=false;
+    updatePlayButtonUI();
   });
 
   document.querySelectorAll('.task-btn').forEach(btn=>{
@@ -288,6 +459,8 @@ function initModeAndTechControls(){
       btn.textContent=techZoom?'🔍 Reset':'🔍 Zoom';
     }
   });
+
+  initSpecsDrawer();
 }
 
 function setup(){
@@ -346,7 +519,10 @@ function setup(){
   // Technician character & service cart
   technician=buildTechnician();
   scene.add(technician.root);
+  if(technician.caddy) scene.add(technician.caddy);
+  if(technician.snapRing) scene.add(technician.snapRing);
   technician.root.visible=false; // hidden by default until technician mode activated
+  if(technician.caddy) technician.caddy.visible=false;
 
   resize();
   $('loader').hidden=true;
@@ -354,6 +530,22 @@ function setup(){
   motionUI();
   initRotateControls();
   initModeAndTechControls();
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.get('mode') === 'technician') {
+    setExperienceMode('technician');
+    const act = urlParams.get('action');
+    if(act && SERVICE_ACTIONS[act]) {
+      techAction = act;
+      updateTechTaskUI();
+    }
+    if(urlParams.get('p')) {
+      techProgress = parseFloat(urlParams.get('p'));
+    }
+    if(urlParams.get('pause') === '1') {
+      techPlaying = false;
+      updatePlayButtonUI();
+    }
+  }
   requestAnimationFrame(frame);
 }
 
@@ -372,38 +564,41 @@ function positionCamera(){
   const isMobile=window.innerWidth<=768;
 
   if(currentMode==='technician'){
-    const cx=techZoom?0.32:0.42;
-    const cy=techZoom?(isMobile?2.42:2.15):(isMobile?2.32:2.10);
-    const cz=techZoom?0.95:0.75;
+    let targetLookY = 2.25;
+    let targetLookX = 0.35;
+    if(technician && technician.activePart3DPos){
+      targetLookY = 1.40 + technician.activePart3DPos.y * 0.35;
+      targetLookX = 0.20 + technician.activePart3DPos.x * 0.25;
+    }
+    const cx=targetLookX;
+    const cy=targetLookY;
+    const cz=0.45;
 
     if(isMobile){
       const h=stage.clientHeight||(window.innerHeight-72);
       const aspect=camera.aspect||(stage.clientWidth/h);
       const hud=$('tech-hud-card');
       const isCompact=hud&&hud.classList.contains('is-compact');
-      // On mobile, the top mode selector pill is at top:76px (~42px into stage). Top padding: 54px.
       const topReserved=54;
-      // Bottom controls and HUD sheet
       const bottomReserved=isCompact?110:248;
       const availH=Math.max(220,h-topReserved-bottomReserved);
       const targetScreenY=topReserved+availH*0.50;
       const stageCenterY=h*0.5;
       const pixelShiftUp=stageCenterY-targetScreenY;
 
-      // Model size in world units
       const targetModelPixels=availH*(techZoom?0.88:0.78);
-      const pixelsPerUnit=targetModelPixels/(techZoom?2.6:4.1);
+      const pixelsPerUnit=targetModelPixels/(techZoom?3.2:4.8);
       const tanHalfFov=Math.tan(T.MathUtils.degToRad(camera.fov/2));
 
       let dist=(h/pixelsPerUnit)/(2*tanHalfFov);
-      const distWidth=((techZoom?2.2:3.2)*1.16/aspect)/(2*tanHalfFov);
+      const distWidth=((techZoom?2.8:3.8)*1.16/aspect)/(2*tanHalfFov);
       dist=Math.max(dist,distWidth);
-      if(techZoom)dist*=0.62;
+      if(techZoom)dist*=0.68;
 
       const actualPixelsPerUnit=h/(2*dist*tanHalfFov);
       const worldYShift=pixelShiftUp/actualPixelsPerUnit;
       const lookY=cy-worldYShift;
-      const angle=0.48+yaw;
+      const angle=0.40+yaw;
       const pitchFactor=techZoom?0.16:0.20;
 
       camera.position.set(cx+Math.sin(angle)*dist,lookY+dist*(pitchFactor+pitch),cz+Math.cos(angle)*dist);
@@ -411,11 +606,11 @@ function positionCamera(){
       return;
     }
 
-    const baseDist=techZoom?4.2:7.2;
-    const scaleFactor=0.68;
+    const baseDist=techZoom?6.2:10.2;
+    const scaleFactor=1.0;
     const dist=Math.max(baseDist,baseDist/camera.aspect)/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2)))*scaleFactor;
-    const angle=0.48+yaw;
-    camera.position.set(cx+Math.sin(angle)*dist,cy+dist*(0.22+pitch),cz+Math.cos(angle)*dist);
+    const angle=0.40+yaw;
+    camera.position.set(cx+Math.sin(angle)*dist,cy+dist*(0.20+pitch),cz+Math.cos(angle)*dist);
     camera.lookAt(cx,cy,cz);
     return;
   }
@@ -627,12 +822,45 @@ function frame(ms){
     p=0;
     poseParts(copier.parts,0,0,false);
     if(techPlaying){
-      techProgress=(techProgress+dt*0.08)%1.0;
+      techProgress=(techProgress+dt*0.065)%1.0;
     }
     animateTechnicianService(technician,copier,techAction,techProgress,ms/1000);
     updateTechHUD(techProgress);
     shadow.material.opacity=0.95;
+
+    // Positive Locking Sound trigger
+    if(technician.justLocked && lastLockSoundStep !== techLastStepIdx){
+      playMechanicalSound('snap');
+      lastLockSoundStep = techLastStepIdx;
+    } else if(!technician.justLocked && lastLockSoundStep === techLastStepIdx && technician.activePart && technician.activePart.localP < 0.85){
+      lastLockSoundStep = -1;
+    }
+
+    // Realtime 3D Floating Tag projection
+    const tag = $('tech-floating-tag');
+    if(tag && technician.activePart){
+      const p3d = technician.activePart3DPos.clone();
+      const v = p3d.project(camera);
+      if(v.z < 1.0){
+        const sw = stage.clientWidth;
+        const sh = stage.clientHeight;
+        const x = Math.max(12, Math.min(sw - 200, (v.x * 0.5 + 0.5) * sw + 16));
+        const y = Math.max(12, Math.min(sh - 50, (-v.y * 0.5 + 0.5) * sh - 30));
+        tag.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        tag.hidden = false;
+        const tTitle = $('tech-floating-title');
+        const tPhase = $('tech-floating-phase');
+        if(tTitle) tTitle.textContent = technician.activePart.title;
+        if(tPhase) tPhase.textContent = technician.activePart.phase;
+        tag.classList.toggle('is-locked', technician.justLocked);
+      } else {
+        tag.hidden = true;
+      }
+    }
   }else{
+    const tag = $('tech-floating-tag');
+    if(tag) tag.hidden = true;
+
     // Normal Exploded 3D view driven by scroll
     p=reduced?target:T.MathUtils.lerp(p,target,1-Math.exp(-dt*9));
     if(Math.abs(p-target)<.00001)p=target;

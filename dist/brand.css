@@ -13,7 +13,7 @@
 .pill-dot{width:5px;height:5px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 1px #fff;animation:pulse-dot 1.5s infinite ease-in-out}
 
 /* FLOATING TECHNICIAN SERVICE HUD (COMPACT & SLEEK) */
-.tech-hud-card{position:absolute;top:14px;right:16px;z-index:15;width:236px;max-width:calc(100% - 24px);background:rgba(255,255,255,.96);border:1px solid rgba(224,222,218,.95);border-radius:11px;box-shadow:0 8px 24px rgba(18,22,31,.10),0 1.5px 4px rgba(18,22,31,.04);backdrop-filter:blur(20px);padding:7px 9px;pointer-events:auto;animation:hud-in .25s cubic-bezier(.16,1,.3,1)}
+.tech-hud-card{position:absolute;top:14px;right:16px;z-index:15;width:264px;max-width:calc(100% - 24px);background:rgba(255,255,255,.96);border:1px solid rgba(224,222,218,.95);border-radius:11px;box-shadow:0 8px 24px rgba(18,22,31,.10),0 1.5px 4px rgba(18,22,31,.04);backdrop-filter:blur(20px);padding:7px 9px;pointer-events:auto;animation:hud-in .25s cubic-bezier(.16,1,.3,1)}
 @keyframes hud-in{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .tech-hud-header{display:flex;align-items:center;gap:6px}
 .tech-avatar-shell{position:relative;width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#1b324b 0%,#284766 100%);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-size:11px;flex-shrink:0;box-shadow:0 1.5px 6px rgba(27,50,75,.18)}
@@ -32,7 +32,13 @@
 .tech-step-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5px}
 .tech-step-pill{font-size:6.5px;font-weight:800;letter-spacing:.4px;background:rgba(223,37,46,.08);color:var(--blue);padding:1px 4px;border-radius:3px;text-transform:uppercase}
 .tech-step-category{font-size:6.5px;font-weight:700;color:#64748b;letter-spacing:.3px;text-transform:uppercase}
+
+.tech-phase-badge{display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border:1px solid #cbd5e1;padding:1px 5px;border-radius:4px;font-size:6.8px;font-weight:800;color:#334155;letter-spacing:.3px;margin-bottom:2px;text-transform:uppercase}
+.tech-phase-dot{width:4px;height:4px;border-radius:50%;background:#0284c7;animation:pulse-dot 1.4s infinite ease-in-out}
+.tech-phase-sub, .tech-phase-hi{color:#0369a1;font-weight:700;border-left:1px solid #cbd5e1;padding-left:4px;margin-left:2px}
+
 .tech-step-title{margin:1px 0;font-size:9.5px;font-weight:800;color:#0f172a;letter-spacing:-.2px;line-height:1.2}
+.tech-step-sub, .tech-step-hi{font-size:8px;font-weight:600;color:#64748b;margin:-1px 0 3px;letter-spacing:.1px}
 
 .tech-spec-badge{display:inline-flex;align-items:center;gap:3px;font-size:6.5px;font-weight:700;letter-spacing:.3px;color:#b91c1c;background:#fef2f2;border:1px solid #fecaca;border-radius:3.5px;padding:1px 4px;margin:1px 0 2px;text-transform:uppercase}
 .tech-spec-icon{font-size:7px;color:#ef4444}
@@ -48,21 +54,54 @@
 .tech-dot.active{background:#181d24;color:#fff;border-color:#181d24;box-shadow:0 1px 3px rgba(24,29,36,.25)}
 
 .tech-hud-footer{margin-top:5px;padding-top:5px;border-top:1px solid #eef0f2}
-.tech-task-selector{display:flex;gap:2.5px}
-.task-btn{flex:1;padding:3px 2px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;font-size:7.2px;font-weight:700;color:#475569;display:flex;align-items:center;justify-content:center;gap:1.5px;cursor:pointer;transition:all .18s;white-space:nowrap}
+.tech-task-selector{display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto}
+.task-btn{flex:1;padding:3px 2px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;font-size:6.8px;font-weight:700;color:#475569;display:flex;align-items:center;justify-content:center;gap:1.5px;cursor:pointer;transition:all .18s;white-space:nowrap}
 .task-btn:hover{border-color:#cbd5e1;color:#0f172a;background:#fff}
 .task-btn.active{background:#181d24;color:#fff;border-color:#181d24;box-shadow:0 1.5px 5px rgba(24,29,36,.18)}
 .task-btn-ico{font-size:7.5px}
 
-.tech-hud-controls{display:flex;align-items:center;justify-content:space-between;gap:3px;margin-top:4px}
-.tech-btn{padding:2.5px 6px;border-radius:5px;border:1px solid #e2e8f0;background:#fff;font-size:7.5px;font-weight:700;color:#334155;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:2px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.tech-hud-controls{display:flex;align-items:center;justify-content:space-between;gap:2px;margin-top:4px}
+.tech-btn{padding:2.5px 4.5px;border-radius:5px;border:1px solid #e2e8f0;background:#fff;font-size:7.2px;font-weight:700;color:#334155;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:2px;box-shadow:0 1px 2px rgba(0,0,0,.03);white-space:nowrap}
 .tech-btn:hover{border-color:var(--blue);color:var(--blue);box-shadow:0 1.5px 4px rgba(223,37,46,.12);background:#fff}
 .tech-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 1.5px 5px rgba(223,37,46,.25)}
+
+/* 3D FLOATING COMPONENT TAG */
+.tech-floating-tag{position:absolute;pointer-events:none;z-index:18;display:inline-flex;align-items:center;gap:6px;background:rgba(18,24,38,.88);border:1px solid rgba(255,255,255,.22);border-radius:24px;padding:4px 10px;color:#fff;font-size:9px;backdrop-filter:blur(10px);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:border-color .18s,background .18s;white-space:nowrap}
+.tech-floating-tag .floating-tag-dot{width:6px;height:6px;border-radius:50%;background:#38bdf8;box-shadow:0 0 8px #38bdf8;animation:pulse-dot 1.2s infinite ease-in-out}
+.tech-floating-tag.is-locked{background:rgba(13,138,67,.92);border-color:#22c55e;box-shadow:0 0 16px rgba(34,197,94,.5)}
+.tech-floating-tag.is-locked .floating-tag-dot{background:#fff;box-shadow:0 0 10px #fff}
+.floating-tag-body strong{font-weight:700;letter-spacing:.2px}
+.floating-tag-body span{color:#94a3b8;font-size:7.5px;margin-left:4px;text-transform:uppercase;font-weight:600}
+.tech-floating-tag.is-locked .floating-tag-body span{color:#dcfce7}
+
+/* EXPANDABLE TECHNICAL PARTS DIRECTORY DRAWER */
+.tech-specs-drawer{margin-top:6px;border-top:1px solid #e2e8f0;padding-top:6px;animation:hud-in .2s ease;max-height:220px;display:flex;flex-direction:column}
+.specs-drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.specs-drawer-title{display:flex;align-items:center;gap:4px}
+.specs-icon{font-size:10px}
+.specs-drawer-title strong{font-size:8px;color:#0f172a;display:block;line-height:1.2}
+.specs-drawer-title small{font-size:7px;color:#64748b;display:block}
+.specs-close-btn{border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;width:16px;height:16px;border-radius:4px;display:grid;place-items:center;font-size:8px;cursor:pointer;padding:0;line-height:1}
+.specs-close-btn:hover{background:#fff;color:var(--blue);border-color:var(--blue)}
+.specs-drawer-list{overflow-y:auto;max-height:175px;display:flex;flex-direction:column;gap:4px;padding-right:2px}
+.specs-part-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px 6px;display:flex;flex-direction:column;gap:2px;transition:all .15s ease}
+.specs-part-item:hover{border-color:var(--blue);background:#fff}
+.specs-part-badge{display:flex;align-items:center;gap:4px}
+.specs-part-num{font-size:6.5px;font-weight:800;background:#0f172a;color:#fff;padding:0.5px 3.5px;border-radius:3px}
+.specs-part-code{font-size:6.5px;font-weight:700;color:var(--blue);letter-spacing:.3px}
+.specs-part-info h4{margin:1px 0 0;font-size:8px;font-weight:700;color:#0f172a;line-height:1.2}
+.specs-part-sub, .specs-part-hi{font-size:7px;color:#0284c7;font-weight:700;margin-bottom:1px;text-transform:uppercase;letter-spacing:.2px}
+.specs-part-spec{font-size:6.8px;color:#475569;line-height:1.2;margin:1px 0}
+.specs-part-tags{display:flex;flex-direction:column;gap:1px;font-size:6.2px;color:#64748b;margin-top:2px;background:#f1f5f9;padding:2px 4px;border-radius:4px}
 
 /* Compact Mode (Universal for Desktop & Mobile) */
 .tech-hud-card.is-compact{padding:5px 8px!important}
 .tech-hud-card.is-compact .tech-hud-content p.tech-step-desc,
 .tech-hud-card.is-compact .tech-task-selector,
+.tech-hud-card.is-compact .tech-specs-drawer,
+.tech-hud-card.is-compact .tech-phase-badge,
+.tech-hud-card.is-compact .tech-step-sub,
+.tech-hud-card.is-compact .tech-step-hi,
 .tech-hud-card.is-compact .tech-spec-badge{display:none!important}
 .tech-hud-card.is-compact .tech-hud-content{margin-top:3px!important}
 .tech-hud-card.is-compact .tech-hud-footer{margin-top:4px!important;padding-top:3px!important}
@@ -158,3 +197,7 @@ body.mode-technician .view-controls button{
 .task-btn{font-size:6.8px!important}
 .tech-action-heading{font-size:9px!important}
 }
+
+/* FIX VIEW CONTROLS ROTATE HINT OVERLAP */
+.view-controls{display:inline-flex!important;align-items:center!important;gap:6px!important;padding:5px 14px!important}
+.view-controls span.rotate-hint{position:static!important;transform:none!important;display:inline-block!important;margin-right:4px!important;font-size:8px!important;font-weight:700!important;letter-spacing:.8px!important;color:#64748b!important;white-space:nowrap!important;pointer-events:none!important}

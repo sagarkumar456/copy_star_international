@@ -107,6 +107,10 @@ body.mode-technician #stage{
   width:100%!important;
   z-index:10!important;
 }
+body.mode-technician .watermark{
+  top:24%!important;
+  opacity:.18!important;
+}
 body.mode-technician .tech-hud-card{
   position:absolute!important;
   top:auto!important;

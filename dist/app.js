@@ -226,6 +226,8 @@ function setExperienceMode(newMode){
     yawTarget=0;
     pitchTarget=0;
   }
+  resize();
+  positionCamera();
 }
 
 function initModeAndTechControls(){
@@ -243,6 +245,7 @@ function initModeAndTechControls(){
     const isCompact=hud.classList.toggle('is-compact');
     const toggleBtn=$('tech-hud-toggle');
     if(toggleBtn)toggleBtn.textContent=isCompact?'▴':'▾';
+    positionCamera();
   });
 
   document.querySelectorAll('.task-btn').forEach(btn=>{
@@ -366,13 +369,50 @@ function resize(){
 
 function positionCamera(){
   if(!camera)return;
+  const isMobile=window.innerWidth<=768;
+
   if(currentMode==='technician'){
-    const isMobile=window.innerWidth<=768;
     const cx=techZoom?0.32:0.42;
-    const cy=techZoom?(isMobile?2.38:2.15):(isMobile?2.32:2.10);
+    const cy=techZoom?(isMobile?2.42:2.15):(isMobile?2.32:2.10);
     const cz=techZoom?0.95:0.75;
-    const baseDist=techZoom?(isMobile?5.0:4.2):(isMobile?8.0:7.2);
-    const scaleFactor=isMobile?0.74:0.68;
+
+    if(isMobile){
+      const h=stage.clientHeight||(window.innerHeight-72);
+      const aspect=camera.aspect||(stage.clientWidth/h);
+      const hud=$('tech-hud-card');
+      const isCompact=hud&&hud.classList.contains('is-compact');
+      // On mobile, the top mode selector pill is at top:76px (~42px into stage). Top padding: 54px.
+      const topReserved=54;
+      // Bottom controls and HUD sheet
+      const bottomReserved=isCompact?110:248;
+      const availH=Math.max(220,h-topReserved-bottomReserved);
+      const targetScreenY=topReserved+availH*0.50;
+      const stageCenterY=h*0.5;
+      const pixelShiftUp=stageCenterY-targetScreenY;
+
+      // Model size in world units
+      const targetModelPixels=availH*(techZoom?0.88:0.78);
+      const pixelsPerUnit=targetModelPixels/(techZoom?2.6:4.1);
+      const tanHalfFov=Math.tan(T.MathUtils.degToRad(camera.fov/2));
+
+      let dist=(h/pixelsPerUnit)/(2*tanHalfFov);
+      const distWidth=((techZoom?2.2:3.2)*1.16/aspect)/(2*tanHalfFov);
+      dist=Math.max(dist,distWidth);
+      if(techZoom)dist*=0.62;
+
+      const actualPixelsPerUnit=h/(2*dist*tanHalfFov);
+      const worldYShift=pixelShiftUp/actualPixelsPerUnit;
+      const lookY=cy-worldYShift;
+      const angle=0.48+yaw;
+      const pitchFactor=techZoom?0.16:0.20;
+
+      camera.position.set(cx+Math.sin(angle)*dist,lookY+dist*(pitchFactor+pitch),cz+Math.cos(angle)*dist);
+      camera.lookAt(cx,lookY,cz);
+      return;
+    }
+
+    const baseDist=techZoom?4.2:7.2;
+    const scaleFactor=0.68;
     const dist=Math.max(baseDist,baseDist/camera.aspect)/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2)))*scaleFactor;
     const angle=0.48+yaw;
     camera.position.set(cx+Math.sin(angle)*dist,cy+dist*(0.22+pitch),cz+Math.cos(angle)*dist);
@@ -381,10 +421,13 @@ function positionCamera(){
   }
 
   const e=reduced?0:explosionAt(p),height=5.9+2.1*e,width=5.8+3.4*e;
-  const dist=Math.max(height,width/camera.aspect)/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2)));
+  const baseScale=isMobile?0.92:1.0;
+  const dist=Math.max(height,width/camera.aspect)/(2*Math.tan(T.MathUtils.degToRad(camera.fov/2)))*baseScale;
   const angle=.52+yaw;
-  camera.position.set(Math.sin(angle)*dist,2.25+e*.55+dist*(.32+pitch),Math.cos(angle)*dist);
-  camera.lookAt(0,2.25+e*.55,0);
+  const yShift=isMobile?(0.40*(1-e)):0;
+  const lookY=2.25+e*.55-yShift;
+  camera.position.set(Math.sin(angle)*dist,lookY+dist*(.32+pitch),Math.cos(angle)*dist);
+  camera.lookAt(0,lookY,0);
 }
 
 let isDragging=false,isDraggingPart=false,activePart=null,startX=0,startY=0,startYaw=0,startPitch=0,autoSpin=false;

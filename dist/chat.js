@@ -1,5 +1,5 @@
 /**
- * COPYSTAR International - Human-like Bilingual (English & Nepali) Live AI Chat
+ * COPYSTAR International - OneX Emerald Green Bilingual AI Chat
  * With direct owner email dispatch via EmailJS to Sandeep Das (Copystarnepal@hotmail.com)
  */
 import { sendEnquiry } from './email-config.js';
@@ -22,11 +22,12 @@ import { sendEnquiry } from './email-config.js';
   // UI Strings dictionary for bilingual interface
   const UI = {
     en: {
-      teaser: 'Chat with AI & Sandeep Das',
-      headerTitle: 'COPYSTAR Support',
-      headerSub: 'Active now · Sandeep Das Team',
+      teaser: 'Chat with COPYSTAR AI',
+      headerTitle: 'COPYSTAR AI',
+      headerSub: 'How can I help you today?',
       langLabel: 'Language / भाषा:',
-      inputPlaceholder: 'Ask anything about copiers, parts, repairs in English or नेपाली...',
+      dateLabel: 'Today',
+      inputPlaceholder: 'Ask anything in English or नेपाली...',
       sendBtnAria: 'Send message',
       waTooltip: 'Chat directly on WhatsApp',
       closeTooltip: 'Minimize chat',
@@ -50,10 +51,11 @@ import { sendEnquiry } from './email-config.js';
       waBtn: '💬 Chat on WhatsApp'
     },
     ne: {
-      teaser: 'सन्दीप दास तथा AI सँग कुरा गर्नुहोस्',
-      headerTitle: 'COPYSTAR सहायता',
-      headerSub: 'उपलब्ध छ · सन्दीप दास टिम',
+      teaser: 'COPYSTAR AI सँग कुरा गर्नुहोस्',
+      headerTitle: 'COPYSTAR AI',
+      headerSub: 'आज म कसरी सहयोग गर्न सक्छु?',
       langLabel: 'Language / भाषा:',
+      dateLabel: 'आज',
       inputPlaceholder: 'फोटोकपी मेसिन, मर्मत वा टोनरबारे नेपाली वा English मा सोध्नुहोस्...',
       sendBtnAria: 'सन्देश पठाउनुहोस्',
       waTooltip: 'ह्वाट्सएपमा सीधै कुरा गर्नुहोस्',
@@ -99,7 +101,7 @@ import { sendEnquiry } from './email-config.js';
     <div class="chat-launcher-wrap">
       <div class="chat-teaser-pill" id="chat-teaser" title="Open Support Chat">
         <span class="teaser-dot"></span>
-        <span id="chat-teaser-text">Chat with AI & Sandeep Das</span>
+        <span id="chat-teaser-text">Chat with COPYSTAR AI</span>
       </div>
       <button class="chat-launcher-btn" id="chat-toggle-btn" type="button" aria-label="Toggle Live Chat" aria-expanded="false">
         <span class="chat-launcher-icon">
@@ -112,23 +114,27 @@ import { sendEnquiry } from './email-config.js';
     </div>
 
     <div class="chat-window" id="chat-window" role="dialog" aria-label="Customer Support Chat">
+      <!-- OneX-Style Vibrant Green Header -->
       <div class="chat-header">
         <div class="chat-header-info">
           <div class="chat-header-avatar">
-            <span>🧑‍💼</span>
+            <img src="./assets/copystar-logo.png" alt="COPYSTAR" class="chat-header-logo-img">
             <span class="chat-avatar-status"></span>
           </div>
           <div class="chat-header-title">
-            <h3 id="chat-header-title">COPYSTAR Support <span class="chat-badge-verified">OFFICIAL</span></h3>
-            <p id="chat-header-sub">Active now · Sandeep Das Team</p>
+            <h3 id="chat-header-title">COPYSTAR AI</h3>
+            <p id="chat-header-sub">How can I help you today?</p>
           </div>
         </div>
         <div class="chat-header-actions">
           <a href="https://wa.me/9779851122595" target="_blank" rel="noopener noreferrer" class="chat-header-btn wa-btn" id="chat-wa-header-link" title="Chat on WhatsApp" aria-label="WhatsApp">
             💬
           </a>
-          <button class="chat-header-btn" id="chat-close-btn" type="button" title="Minimize Chat" aria-label="Close Chat">
-            ✕
+          <button class="chat-header-btn bell-btn" id="chat-bell-btn" type="button" title="Notifications" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          </button>
+          <button class="chat-header-btn close-btn" id="chat-close-btn" type="button" title="Close Chat" aria-label="Close Chat">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
         </div>
       </div>
@@ -168,6 +174,7 @@ import { sendEnquiry } from './email-config.js';
   const teaserPill = document.getElementById('chat-teaser');
   const teaserText = document.getElementById('chat-teaser-text');
   const closeBtn = document.getElementById('chat-close-btn');
+  const bellBtn = document.getElementById('chat-bell-btn');
   const messagesBox = document.getElementById('chat-messages');
   const typingIndicator = document.getElementById('chat-typing');
   const chatForm = document.getElementById('chat-input-form');
@@ -176,6 +183,14 @@ import { sendEnquiry } from './email-config.js';
   const langBtnNe = document.getElementById('lang-btn-ne');
   const headerTitle = document.getElementById('chat-header-title');
   const headerSub = document.getElementById('chat-header-sub');
+
+  // Bell button toggle
+  let notificationsMuted = false;
+  bellBtn.addEventListener('click', () => {
+    notificationsMuted = !notificationsMuted;
+    bellBtn.style.opacity = notificationsMuted ? '0.45' : '1';
+    bellBtn.title = notificationsMuted ? 'Notifications muted' : 'Notifications active';
+  });
 
   // Format Time
   function getTimeString() {
@@ -201,10 +216,26 @@ import { sendEnquiry } from './email-config.js';
     }
   }
 
-  // Append Message Bubble
+  // Append Centered Date Pill (e.g. "Today")
+  function appendDatePill(label = 'Today') {
+    const pill = document.createElement('div');
+    pill.className = 'chat-date-pill';
+    pill.id = 'chat-date-pill';
+    pill.textContent = label;
+    messagesBox.appendChild(pill);
+  }
+
+  // Append Message Bubble with Avatar
   function appendMessage(text, sender = 'bot', customHtml = null) {
     const row = document.createElement('div');
     row.className = `chat-msg-row ${sender}`;
+
+    if (sender === 'bot') {
+      const avatar = document.createElement('div');
+      avatar.className = 'chat-msg-avatar';
+      avatar.innerHTML = `<img src="./assets/copystar-logo.png" alt="COPYSTAR">`;
+      row.appendChild(avatar);
+    }
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-msg-bubble';
@@ -212,7 +243,6 @@ import { sendEnquiry } from './email-config.js';
     if (customHtml) {
       bubble.innerHTML = customHtml;
     } else {
-      // Preserve line breaks
       bubble.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
     }
 
@@ -373,15 +403,19 @@ import { sendEnquiry } from './email-config.js';
     scrollToBottom();
   }
 
-  // Welcome Conversation
+  // Welcome Conversation - Formatted just like the OneX screenshot!
   function initWelcomeConversation() {
     showTyping(true);
     setTimeout(() => {
       showTyping(false);
 
+      if (!messagesBox.querySelector('.chat-date-pill')) {
+        appendDatePill(currentLang === 'ne' ? 'आज' : 'Today');
+      }
+
       if (currentLang === 'ne') {
         appendMessage(
-          "नमस्ते! 🙏 COPYSTAR International मा स्वागत छ।\nम सन्दीप दासको टिमबाट तपाईंलाई सहयोग गर्न यहाँ छु। फोटोकपी मेसिन, ओरिजिनल टोनर कार्ट्रिज, स्पेयर पार्टस् वा प्राविधिक मर्मत सेवा बारे के जानकारी चाहिन्छ, ढुक्क भएर सोध्नुहोस्!"
+          "नमस्ते! म COPYSTAR AI — सन्दीप दासको सहायता प्रणाली।\nतपाईं मसँग English वा नेपालीमा कुरा गर्न सक्नुहुन्छ।\nआज म कसरी सहयोग गर्न सक्छु?"
         );
         appendChips([
           { icon: '💰', label: 'मूल्य / कोटेशन', query: 'मलाई फोटोकपी मेसिन र टोनरको मूल्य/कोटेशन चाहियो।' },
@@ -392,7 +426,7 @@ import { sendEnquiry } from './email-config.js';
         ]);
       } else {
         appendMessage(
-          "Namaste & Hello! 👋 Welcome to COPYSTAR International.\nI am your assistant from Sandeep Das's team. How can I help you today with photocopier machines, genuine toner supplies, spare parts, or repair services in Kathmandu?"
+          "Hi, I'm COPYSTAR AI — your support assistant.\nYou can chat with me in English or नेपाली.\nHow can I help you today?"
         );
         appendChips([
           { icon: '💰', label: 'Price Quotation', query: 'I want a price quotation for machines and supplies.' },
@@ -416,9 +450,15 @@ import { sendEnquiry } from './email-config.js';
 
     // Update text placeholders
     teaserText.textContent = t.teaser;
-    headerTitle.innerHTML = `${t.headerTitle} <span class="chat-badge-verified">OFFICIAL</span>`;
+    headerTitle.textContent = t.headerTitle;
     headerSub.textContent = t.headerSub;
     chatInput.placeholder = t.inputPlaceholder;
+
+    // Update date pill if present
+    const datePill = messagesBox.querySelector('.chat-date-pill');
+    if (datePill) {
+      datePill.textContent = t.dateLabel;
+    }
 
     if (triggerGreeting) {
       appendMessage(
@@ -457,7 +497,7 @@ import { sendEnquiry } from './email-config.js';
     if (nepaliRomanRegex.test(text)) {
       return 'ne';
     }
-    return currentLang; // keep current language if ambiguous
+    return currentLang;
   }
 
   // Human-like Bilingual Conversational Engine

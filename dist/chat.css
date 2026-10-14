@@ -4,10 +4,10 @@
    ========================================================== */
 
 :root {
-  --chat-primary: #00c58a;
-  --chat-primary-hover: #00b07a;
-  --chat-primary-dark: #008f63;
-  --chat-header-bg: #00c58a;
+  --chat-primary: #33b895;
+  --chat-primary-hover: #289679;
+  --chat-primary-dark: #207d64;
+  --chat-header-bg: #33b895;
   --chat-header-title: #0a2218;
   --chat-header-sub: #0f3b29;
   --chat-header-icon: #0a2218;
@@ -16,8 +16,8 @@
   --chat-border: #e6ebf1;
   --chat-text: #0f172a;
   --chat-muted: #64748b;
-  --chat-online: #00c58a;
-  --chat-user-bg: #00c58a;
+  --chat-online: #33b895;
+  --chat-user-bg: #33b895;
   --chat-user-text: #ffffff;
   --chat-bot-bg: #edf2f7;
   --chat-bot-text: #0f172a;
@@ -61,8 +61,8 @@
 
 .chat-teaser-pill:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 197, 138, 0.22);
-  border-color: rgba(0, 197, 138, 0.5);
+  box-shadow: 0 6px 20px rgba(51, 184, 149, 0.22);
+  border-color: rgba(51, 184, 149, 0.5);
 }
 
 .chat-teaser-pill .teaser-dot {
@@ -70,7 +70,7 @@
   height: 8px;
   border-radius: 50%;
   background: var(--chat-online);
-  box-shadow: 0 0 0 2px rgba(0, 197, 138, 0.35);
+  box-shadow: 0 0 0 2px rgba(51, 184, 149, 0.35);
   animation: chat-pulse 1.8s infinite;
 }
 
@@ -79,10 +79,10 @@
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00d696 0%, #00b07a 100%);
+  background: linear-gradient(135deg, #3cdbb2 0%, #289679 100%);
   color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 0 8px 24px rgba(0, 197, 138, 0.38), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(51, 184, 149, 0.38), 0 2px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -94,7 +94,7 @@
 
 .chat-launcher-btn:hover {
   transform: scale(1.08) translateY(-2px);
-  box-shadow: 0 12px 30px rgba(0, 197, 138, 0.48);
+  box-shadow: 0 12px 30px rgba(51, 184, 149, 0.48);
 }
 
 .chat-launcher-btn:active {
@@ -206,7 +206,7 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: #00c58a;
+  background: #33b895;
   border: 2px solid #ffffff;
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
@@ -315,7 +315,7 @@
 .chat-lang-btn.active {
   background: var(--chat-primary);
   color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 197, 138, 0.35);
+  box-shadow: 0 1px 4px rgba(51, 184, 149, 0.35);
 }
 
 /* Chat Messages Area */
@@ -412,7 +412,7 @@
   background: var(--chat-user-bg);
   color: var(--chat-user-text);
   border-bottom-right-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 197, 138, 0.25);
+  box-shadow: 0 2px 8px rgba(51, 184, 149, 0.25);
 }
 
 .chat-msg-time {
@@ -453,8 +453,8 @@
 
 .chat-chip:hover {
   background: #e6f9f3;
-  border-color: #00c58a;
-  color: #008f63;
+  border-color: #33b895;
+  color: #207d64;
   transform: translateY(-1px);
 }
 
@@ -520,7 +520,7 @@
   border-color: var(--chat-primary);
   background: #fff;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 197, 138, 0.2);
+  box-shadow: 0 0 0 2px rgba(51, 184, 149, 0.2);
 }
 
 .chat-card-submit {
@@ -543,7 +543,7 @@
 .chat-card-submit:hover:not(:disabled) {
   background: var(--chat-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 197, 138, 0.35);
+  box-shadow: 0 4px 12px rgba(51, 184, 149, 0.35);
 }
 
 .chat-card-submit:disabled {
@@ -632,7 +632,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00c58a;
+  background: #33b895;
   animation: typing-bounce 1.3s infinite ease-in-out;
 }
 
@@ -670,7 +670,7 @@
 .chat-input:focus {
   border-color: var(--chat-primary);
   background: #ffffff;
-  box-shadow: 0 0 0 2px rgba(0, 197, 138, 0.18);
+  box-shadow: 0 0 0 2px rgba(51, 184, 149, 0.18);
 }
 
 .chat-send-btn {

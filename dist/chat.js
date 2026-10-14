@@ -32,7 +32,7 @@ import { sendEnquiry } from './email-config.js';
       waTooltip: 'Chat directly on WhatsApp',
       closeTooltip: 'Minimize chat',
       cardTitle: 'Send Enquiry to Sandeep Das',
-      cardDesc: 'Leave your details below. This will be emailed directly to Sandeep Das via EmailJS for quick assistance.',
+      cardDesc: 'Leave your details below. This will be emailed directly to Sandeep Das for quick assistance.',
       nameLabel: 'Your Name *',
       namePlaceholder: 'e.g. Ramesh Shrestha',
       emailLabel: 'Email Address *',
@@ -44,7 +44,7 @@ import { sendEnquiry } from './email-config.js';
       submitBtn: 'Send to Sandeep Das →',
       sendingBtn: 'Sending email... ⏳',
       retryBtn: 'Retry Sending →',
-      footnote: 'Dispatched securely via EmailJS to Copystarnepal@hotmail.com',
+      footnote: 'Sent directly to Copystarnepal@hotmail.com via email',
       successTitle: '✓ Enquiry Sent to Owner!',
       successDesc: name => `Thank you, <b>${escapeHtml(name)}</b>! Your details and message have been emailed directly to Sandeep Das at <b>Copystarnepal@hotmail.com</b>. We will contact you shortly.`,
       callBtn: '📞 Call Directly (+977 9851122595)',
@@ -61,7 +61,7 @@ import { sendEnquiry } from './email-config.js';
       waTooltip: 'ह्वाट्सएपमा सीधै कुरा गर्नुहोस्',
       closeTooltip: 'च्याट बन्द गर्नुहोस्',
       cardTitle: 'सन्दीप दासलाई सन्देश / विवरण पठाउनुहोस्',
-      cardDesc: 'आफ्नो विवरण भर्नुहोस्। यो EmailJS मार्फत सीधै प्रोप्राइटर सन्दीप दासको इमेलमा पठाइनेछ।',
+      cardDesc: 'आफ्नो विवरण भर्नुहोस्। यो सीधै प्रोप्राइटर सन्दीप दासको इमेलमा पठाइनेछ।',
       nameLabel: 'तपाईंको नाम *',
       namePlaceholder: 'जस्तै: रमेश श्रेष्ठ',
       emailLabel: 'इमेल ठेगाना *',
@@ -73,7 +73,7 @@ import { sendEnquiry } from './email-config.js';
       submitBtn: 'सन्दीप दासलाई पठाउनुहोस् →',
       sendingBtn: 'इमेल पठाउँदैछ... ⏳',
       retryBtn: 'पुनः प्रयास गर्नुहोस् →',
-      footnote: 'EmailJS मार्फत Copystarnepal@hotmail.com मा सुरक्षित रूपमा पठाइन्छ',
+      footnote: 'Copystarnepal@hotmail.com मा सुरक्षित रूपमा पठाइन्छ',
       successTitle: '✓ सन्देश सफलतापूर्वक पठाइयो!',
       successDesc: name => `धन्यवाद, <b>${escapeHtml(name)}</b> जी! तपाईंको विवरण र सन्देश सन्दीप दासलाई <b>Copystarnepal@hotmail.com</b> मा पठाइएको छ। हामी तुरुन्तै सम्पर्क गर्नेछौँ।`,
       callBtn: '📞 सीधै फोन गर्नुहोस् (+977 9851122595)',
@@ -388,7 +388,7 @@ import { sendEnquiry } from './email-config.js';
         const fallbackBox = document.createElement('div');
         fallbackBox.style.cssText = 'font-size: 11px; color: #b91c1c; margin-top: 6px;';
         fallbackBox.innerHTML = `
-          Could not confirm delivery via EmailJS. You can connect directly:
+          Could not confirm delivery via email. You can connect directly:
           <div class="chat-direct-actions" style="margin-top: 6px;">
             <a href="https://wa.me/9779851122595?text=${fallbackText}" target="_blank" class="chat-direct-btn wa">Open WhatsApp</a>
             <a href="mailto:Copystarnepal@hotmail.com?subject=COPYSTAR Chat Enquiry&body=${fallbackText}" class="chat-direct-btn call">Draft Email</a>
@@ -524,7 +524,7 @@ import { sendEnquiry } from './email-config.js';
       return {
         reply: isNepali
           ? "धेरै धेरै धन्यवाद! मैले तपाईंको सम्पर्क विवरण सुरक्षित गरेको छु। सन्दीप दासलाई तुरुन्तै इमेल पुगोस् भन्नको लागि कृपया तल एकपटक पुष्टि गरी पठाउनुहोस्:"
-          : "Thank you so much! I've noted down your contact details. Please confirm them in the card below so I can dispatch your message straight to Sandeep Das via EmailJS:",
+          : "Thank you so much! I've noted down your contact details. Please confirm them in the card below so I can dispatch your message straight to Sandeep Das via email:",
         action: 'show_card',
         prefilledEmail: email,
         prefilledPhone: phone,
@@ -545,8 +545,8 @@ import { sendEnquiry } from './email-config.js';
         q.includes('मालिक') || q.includes('सन्दीप') || q.includes('नम्बर') || q.includes('इमेल') || q.includes('सम्पर्क')) {
       return {
         reply: isNepali
-          ? "अवश्य! तपाईं सीधै प्रोप्राइटर सन्दीप दाससँग सम्पर्क गर्न सक्नुहुन्छ। तलको फाराम भर्नुभयो भने EmailJS मार्फत तुरुन्तै Copystarnepal@hotmail.com मा इमेल पुग्नेछ:"
-          : "Certainly! You can send your contact details and requirements straight to proprietor Sandeep Das using our EmailJS form below. An email notification will be delivered immediately to Copystarnepal@hotmail.com:",
+          ? "अवश्य! तपाईं सीधै प्रोप्राइटर सन्दीप दाससँग सम्पर्क गर्न सक्नुहुन्छ। तलको फाराम भर्नुभयो भने तुरुन्तै Copystarnepal@hotmail.com मा इमेल पुग्नेछ:"
+          : "Certainly! You can send your contact details and requirements straight to proprietor Sandeep Das using our email form below. An email notification will be delivered immediately to Copystarnepal@hotmail.com:",
         action: 'show_card',
         chips: isNepali
           ? [
@@ -682,14 +682,14 @@ import { sendEnquiry } from './email-config.js';
       return {
         reply: isNepali
           ? "COPYSTAR International को सम्पर्क विवरण:\n📍 ठेगाना: काठमाडौं, नेपाल\n👤 प्रोप्राइटर: सन्दीप दास (Sandeep Das)\n📞 फोन / ह्वाट्सएप: +977 9851122595\n✉️ इमेल: Copystarnepal@hotmail.com\n\nतपाईं तलको फारामबाट सीधै सन्दीप दासलाई सन्देश पठाउन पनि सक्नुहुन्छ!"
-          : "Here are COPYSTAR International's official contact details:\n📍 Head Office: Kathmandu, Nepal\n👤 Proprietor: Sandeep Das\n📞 Phone & WhatsApp: +977 9851122595\n✉️ Email: Copystarnepal@hotmail.com\n\nYou can also leave your requirements right here, and Sandeep Das will receive it in his inbox via EmailJS!",
+          : "Here are COPYSTAR International's official contact details:\n📍 Head Office: Kathmandu, Nepal\n👤 Proprietor: Sandeep Das\n📞 Phone & WhatsApp: +977 9851122595\n✉️ Email: Copystarnepal@hotmail.com\n\nYou can also leave your requirements right here, and Sandeep Das will receive it directly in his email inbox!",
         chips: isNepali
           ? [
               { icon: '✉️', label: 'सन्देश पठाउनुहोस्', query: 'सन्दीप दासलाई मेरो सन्देश पठाउनुहोस्।' },
               { icon: '💬', label: 'ह्वाट्सएप खोल्नुहोस्', query: 'सन्दीप दाससँग ह्वाट्सएपमा कुरा गर्छु' }
             ]
           : [
-              { icon: '✉️', label: 'Send Details via EmailJS', query: 'Send my enquiry to Sandeep Das' },
+              { icon: '✉️', label: 'Send Details via Email', query: 'Send my enquiry to Sandeep Das' },
               { icon: '💬', label: 'Chat on WhatsApp', query: 'Open WhatsApp with Sandeep Das' }
             ]
       };
